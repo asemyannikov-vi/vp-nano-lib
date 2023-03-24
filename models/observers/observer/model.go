@@ -3,20 +3,25 @@ package observer
 import (
 	"context"
 
+	internalchangemanager "vp-nano-lib/internals/change_manager"
 	internalobserver "vp-nano-lib/internals/observer"
 )
 
 type observer struct {
-	Name string
+	changeManager internalchangemanager.ChangeManager
 }
 
-func New(name string) internalobserver.Observer {
+func New(changeManager interface{}) internalobserver.Observer {
 	return &observer{
-		Name: name,
+		changeManager: changeManager.(internalchangemanager.ChangeManager),
 	}
 }
 
 func (observer *observer) Update(context *context.Context, value interface{}) error {
-	//concreteValue := value.(string)
+	_, err := observer.changeManager.Manage(context, value)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
