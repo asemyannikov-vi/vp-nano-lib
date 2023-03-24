@@ -1,7 +1,7 @@
 package subject
 
 import (
-	"vp-nano-lib/internals/observer"
+	"github.com/asemyannikov-vi/vp-nano-lib/internals/observer"
 )
 
 type Subject interface {

@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 
-	internalchangemanager "vp-nano-lib/internals/change_manager"
-	internalobserver "vp-nano-lib/internals/observer"
+	internalchangemanager "github.com/asemyannikov-vi/vp-nano-lib/internals/change_manager"
+	internalobserver "github.com/asemyannikov-vi/vp-nano-lib/internals/observer"
 )
 
 type observer struct {
