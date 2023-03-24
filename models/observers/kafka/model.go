@@ -2,6 +2,7 @@ package observer
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
@@ -16,7 +17,12 @@ type observer struct {
 	changeManager internalchangemanager.ChangeManager
 }
 
-func New(topic string, brokers []string, changeManager interface{}) internalobserver.Observer {
+func New(topic string, brokers []string, changeManager interface{}) (internalobserver.Observer, error) {
+	castedChangeManager, ok := changeManager.(internalchangemanager.ChangeManager)
+	if !ok {
+		return nil, errors.New("invalid cast")
+	}
+
 	return &observer{
 		writer: kafka.NewWriter(
 			kafka.WriterConfig{
@@ -24,9 +30,8 @@ func New(topic string, brokers []string, changeManager interface{}) internalobse
 				Topic:   topic,
 			},
 		),
-
-		changeManager: changeManager.(internalchangemanager.ChangeManager),
-	}
+		changeManager: castedChangeManager,
+	}, nil
 }
 
 func (observer *observer) Update(context *context.Context, value interface{}) error {

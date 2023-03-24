@@ -2,6 +2,7 @@ package observer
 
 import (
 	"context"
+	"errors"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -18,13 +19,18 @@ type observer struct {
 	changeManager internalchangemanager.ChangeManager
 }
 
-func New(topic string, session *session.Session, changeManager interface{}) internalobserver.Observer {
+func New(topic string, session *session.Session, changeManager interface{}) (internalobserver.Observer, error) {
+	castedChangeManager, ok := changeManager.(internalchangemanager.ChangeManager)
+	if !ok {
+		return nil, errors.New("invalid cast")
+	}
+
 	return &observer{
 		sns:   sns.New(session),
 		topic: aws.String(topic),
 
-		changeManager: changeManager.(internalchangemanager.ChangeManager),
-	}
+		changeManager: castedChangeManager,
+	}, nil
 }
 
 func (observer *observer) Update(context *context.Context, value interface{}) error {
