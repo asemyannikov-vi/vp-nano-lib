@@ -3,7 +3,6 @@ package sqs
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 	internalobserver "vp-nano-lib/internals/observer"
 	internalsubject "vp-nano-lib/internals/subject"
@@ -67,11 +66,8 @@ func (subject *subject) poll() {
 
 		message, err := subject.subscription.Receive(subject.context)
 		if err != nil {
-			fmt.Println("error:", err)
 			continue
 		}
-
-		fmt.Println("Got a message:", string(message.Body))
 
 		subject.SetState(message.Body)
 

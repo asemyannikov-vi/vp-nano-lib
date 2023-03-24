@@ -2,7 +2,6 @@ package observer
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -29,8 +28,6 @@ func New(topic string, session *session.Session, changeManager interface{}) inte
 }
 
 func (observer *observer) Update(context *context.Context, value interface{}) error {
-	fmt.Println("Run the SNS Observer")
-
 	valueInBytes, err := observer.changeManager.Manage(context, value)
 	if err != nil {
 		return err
@@ -45,8 +42,6 @@ func (observer *observer) Update(context *context.Context, value interface{}) er
 	); err != nil {
 		return err
 	}
-
-	fmt.Println("The event send to the SNS Topic:\n", string(valueInBytes))
 
 	return nil
 }

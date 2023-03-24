@@ -2,7 +2,6 @@ package observer
 
 import (
 	"context"
-	"fmt"
 
 	internalobserver "vp-nano-lib/internals/observer"
 )
@@ -18,7 +17,6 @@ func New(name string) internalobserver.Observer {
 }
 
 func (observer *observer) Update(context *context.Context, value interface{}) error {
-	concreteValue := value.(string)
-	fmt.Println("Observer", observer.Name, "got value", concreteValue)
+	//concreteValue := value.(string)
 	return nil
 }

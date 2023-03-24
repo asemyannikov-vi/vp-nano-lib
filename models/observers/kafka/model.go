@@ -2,7 +2,6 @@ package observer
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
@@ -31,8 +30,6 @@ func New(topic string, brokers []string, changeManager interface{}) internalobse
 }
 
 func (observer *observer) Update(context *context.Context, value interface{}) error {
-	fmt.Println("Run the Kafka Observer")
-
 	valueInBytes, err := observer.changeManager.Manage(context, value)
 	if err != nil {
 		return err
@@ -47,8 +44,6 @@ func (observer *observer) Update(context *context.Context, value interface{}) er
 	); err != nil {
 		return err
 	}
-
-	fmt.Println("The event sent to the Kafka Topic:\n", string(valueInBytes))
 
 	return nil
 }
