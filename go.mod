@@ -1,9 +1,9 @@
-module vp-nano-lib
+module github.com/asemyannikov-vi/vp-nano-lib
 
 go 1.20
 
 require (
-	github.com/aws/aws-sdk-go v1.44.228
+	github.com/aws/aws-sdk-go v1.44.229
 	github.com/google/uuid v1.3.0
 	github.com/segmentio/kafka-go v0.4.39
 	gocloud.dev v0.29.0

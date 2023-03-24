@@ -7,8 +7,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
 
-	internalchangemanager "vp-nano-lib/internals/change_manager"
-	internalobserver "vp-nano-lib/internals/observer"
+	internalchangemanager "github.com/asemyannikov-vi/vp-nano-lib/internals/change_manager"
+	internalobserver "github.com/asemyannikov-vi/vp-nano-lib/internals/observer"
 )
 
 type observer struct {

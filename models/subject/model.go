@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"time"
-	internalobserver "vp-nano-lib/internals/observer"
-	internalsubject "vp-nano-lib/internals/subject"
+
+	internalobserver "github.com/asemyannikov-vi/vp-nano-lib/internals/observer"
+	internalsubject "github.com/asemyannikov-vi/vp-nano-lib/internals/subject"
 
 	"gocloud.dev/pubsub"
 	_ "gocloud.dev/pubsub/awssnssqs"
