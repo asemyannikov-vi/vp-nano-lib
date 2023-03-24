@@ -26,8 +26,7 @@ func New(
 	pollInterval int64,
 	address string,
 ) (internalsubject.Subject, error) {
-	queueUrl := fmt.Sprintf("awssqs://sqs.us-east-2.amazonaws.com/502379301106/%s", address)
-	subscription, err := pubsub.OpenSubscription(context, queueUrl)
+	subscription, err := pubsub.OpenSubscription(context, address)
 	if err != nil {
 		return nil, err
 	}
