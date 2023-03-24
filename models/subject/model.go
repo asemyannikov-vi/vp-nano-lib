@@ -1,21 +1,42 @@
-package subject
+package sqs
 
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 	internalobserver "vp-nano-lib/internals/observer"
 	internalsubject "vp-nano-lib/internals/subject"
+
+	"gocloud.dev/pubsub"
+	_ "gocloud.dev/pubsub/awssnssqs"
+	_ "gocloud.dev/pubsub/kafkapubsub"
 )
 
 type subject struct {
 	observers []internalobserver.Observer
 
-	context *context.Context
-	value   interface{}
+	message      []byte
+	pollInterval int64
+	subscription *pubsub.Subscription
+	context      context.Context
 }
 
-func New() internalsubject.Subject {
-	return &subject{}
+func New(
+	context context.Context,
+	pollInterval int64,
+	address string,
+) (internalsubject.Subject, error) {
+	subscription, err := pubsub.OpenSubscription(context, address)
+	if err != nil {
+		return nil, err
+	}
+
+	return &subject{
+		context:      context,
+		subscription: subscription,
+		pollInterval: pollInterval,
+	}, nil
 }
 
 func (subject *subject) Attach(newObserver internalobserver.Observer) error {
@@ -40,26 +61,42 @@ func (subject *subject) Detach(newObserver internalobserver.Observer) error {
 	return errors.New("observer not found")
 }
 
+func (subject *subject) poll() {
+	for {
+		time.Sleep(time.Second * time.Duration(subject.pollInterval))
+
+		message, err := subject.subscription.Receive(subject.context)
+		if err != nil {
+			fmt.Println("error:", err)
+			continue
+		}
+
+		fmt.Println("Got a message:", string(message.Body))
+
+		subject.SetState(message.Body)
+
+		message.Ack()
+	}
+}
+
 func (subject *subject) ListenAndServe() {
+	go subject.poll()
 }
 
 func (subject *subject) Notify() error {
 	for _, observer := range subject.observers {
-		value := subject.GetState().(string)
-		observer.Update(subject.context, value)
+		observer.Update(&subject.context, subject.GetState())
 	}
 
 	return nil
 }
 
 func (subject *subject) SetState(value interface{}) {
-	convertedValue := value.(string)
-
-	subject.value = convertedValue
+	subject.message = value.([]byte)
 
 	subject.Notify()
 }
 
 func (subject subject) GetState() interface{} {
-	return subject.value
+	return subject.message
 }
