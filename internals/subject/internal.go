@@ -8,7 +8,7 @@ type Subject interface {
 	Attach(observer observer.Observer) error
 	Detach(observer observer.Observer) error
 	Notify() error
-	SetState(value interface{})
-	GetState() interface{}
+	SetState(value []byte)
+	GetState() []byte
 	ListenAndServe()
 }
