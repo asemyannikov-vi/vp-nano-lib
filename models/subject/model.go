@@ -3,7 +3,6 @@ package sqs
 import (
 	"context"
 	"errors"
-	"time"
 
 	internalobserver "github.com/asemyannikov-vi/vp-nano-lib/internals/observer"
 	internalsubject "github.com/asemyannikov-vi/vp-nano-lib/internals/subject"
@@ -17,14 +16,12 @@ type subject struct {
 	observers []internalobserver.Observer
 
 	message      []byte
-	pollInterval int64
 	subscription *pubsub.Subscription
 	context      context.Context
 }
 
 func New(
 	context context.Context,
-	pollInterval int64,
 	address string,
 ) (internalsubject.Subject, error) {
 	subscription, err := pubsub.OpenSubscription(context, address)
@@ -35,7 +32,6 @@ func New(
 	return &subject{
 		context:      context,
 		subscription: subscription,
-		pollInterval: pollInterval,
 	}, nil
 }
 
@@ -63,8 +59,6 @@ func (subject *subject) Detach(newObserver internalobserver.Observer) error {
 
 func (subject *subject) poll() {
 	for {
-		time.Sleep(time.Second * time.Duration(subject.pollInterval))
-
 		message, err := subject.subscription.Receive(subject.context)
 		if err != nil {
 			continue
@@ -88,12 +82,12 @@ func (subject *subject) Notify() error {
 	return nil
 }
 
-func (subject *subject) SetState(value interface{}) {
-	subject.message = value.([]byte)
+func (subject *subject) SetState(value []byte) {
+	subject.message = value
 
 	subject.Notify()
 }
 
-func (subject subject) GetState() interface{} {
+func (subject subject) GetState() []byte {
 	return subject.message
 }
