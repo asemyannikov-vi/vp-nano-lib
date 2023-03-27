@@ -3,6 +3,7 @@ package subject
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	internalobserver "github.com/asemyannikov-vi/vp-nano-lib/internals/observer"
 	internalsubject "github.com/asemyannikov-vi/vp-nano-lib/internals/subject"
@@ -11,6 +12,22 @@ import (
 	_ "gocloud.dev/pubsub/awssnssqs"
 	_ "gocloud.dev/pubsub/kafkapubsub"
 )
+
+const (
+	SUBJECT_KAFKA   = "kafka"
+	SUBJECT_AWS_SQS = "awssqs"
+)
+
+type KafkaTopicSettings struct {
+	Topic   string
+	Address string
+}
+
+type AWSSQSTopicSettings struct {
+	Topic   string
+	Region  string
+	Account string
+}
 
 type subject struct {
 	observers []internalobserver.Observer
@@ -23,9 +40,22 @@ type subject struct {
 
 func New(
 	context context.Context,
-	address string,
+	driver string,
+	topicSettings interface{},
 ) (internalsubject.Subject, error) {
-	subscription, err := pubsub.OpenSubscription(context, address)
+	var url string
+
+	if driver == SUBJECT_KAFKA {
+		kafkaTopicSettings := topicSettings.(KafkaTopicSettings)
+		url = fmt.Sprintf("kafka://%s?topic=%s", kafkaTopicSettings.Address, kafkaTopicSettings.Topic)
+	} else if driver == SUBJECT_AWS_SQS {
+		awssqsTopicSettings := topicSettings.(AWSSQSTopicSettings)
+		url = fmt.Sprintf("awssqs://sqs.%s.amazonaws.com/%s/%s", awssqsTopicSettings.Region, awssqsTopicSettings.Account, awssqsTopicSettings.Topic)
+	} else {
+		return nil, errors.New("unknown subject driver")
+	}
+
+	subscription, err := pubsub.OpenSubscription(context, url)
 	if err != nil {
 		return nil, err
 	}
