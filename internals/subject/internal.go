@@ -7,8 +7,10 @@ import (
 type Subject interface {
 	Attach(observer observer.Observer) error
 	Detach(observer observer.Observer) error
-	Notify() error
-	SetState(value []byte)
-	GetState() []byte
+	Notify(value []byte) error
+
 	ListenAndServe()
+	Monitor()
+	SetChannelState(value []byte)
+	GetChannelState() []byte
 }

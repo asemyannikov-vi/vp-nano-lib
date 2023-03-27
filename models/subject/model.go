@@ -1,4 +1,4 @@
-package sqs
+package subject
 
 import (
 	"context"
@@ -15,9 +15,10 @@ import (
 type subject struct {
 	observers []internalobserver.Observer
 
-	message      []byte
 	subscription *pubsub.Subscription
 	context      context.Context
+	writeChannel chan []byte
+	readChannel  chan []byte
 }
 
 func New(
@@ -32,6 +33,8 @@ func New(
 	return &subject{
 		context:      context,
 		subscription: subscription,
+		writeChannel: make(chan []byte),
+		readChannel:  make(chan []byte),
 	}, nil
 }
 
@@ -57,6 +60,14 @@ func (subject *subject) Detach(newObserver internalobserver.Observer) error {
 	return errors.New("observer not found")
 }
 
+func (subject *subject) Notify(value []byte) error {
+	for _, observer := range subject.observers {
+		observer.Update(&subject.context, value)
+	}
+
+	return nil
+}
+
 func (subject *subject) poll() {
 	for {
 		message, err := subject.subscription.Receive(subject.context)
@@ -64,9 +75,11 @@ func (subject *subject) poll() {
 			continue
 		}
 
-		subject.SetState(message.Body)
+		subject.Notify(message.Body)
 
 		message.Ack()
+
+		subject.SetChannelState(message.Body)
 	}
 }
 
@@ -74,20 +87,18 @@ func (subject *subject) ListenAndServe() {
 	go subject.poll()
 }
 
-func (subject *subject) Notify() error {
-	for _, observer := range subject.observers {
-		observer.Update(&subject.context, subject.GetState())
+func (subject subject) SetChannelState(value []byte) {
+	subject.writeChannel <- value
+}
+
+func (subject subject) GetChannelState() []byte {
+	return <-subject.readChannel
+}
+
+func (subject subject) Monitor() {
+	for {
+		writeValue := <-subject.writeChannel
+		value := writeValue
+		subject.readChannel <- value
 	}
-
-	return nil
-}
-
-func (subject *subject) SetState(value []byte) {
-	subject.message = value
-
-	subject.Notify()
-}
-
-func (subject subject) GetState() []byte {
-	return subject.message
 }
